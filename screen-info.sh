@@ -169,7 +169,14 @@ set_font() {
       done
     done
   done
-  echo "No Terminus font found; run: sh $0 install" >&2
+  # fallback: any Terminus font of the requested height, whatever it is named
+  for dir in /usr/share/consolefonts /usr/share/kbd/consolefonts /usr/lib/kbd/consolefonts; do
+    for f in "$dir"/ter-*"$s"b.psf* "$dir"/*Terminus*Bold"$s"x*.psf*; do
+      if [ -f "$f" ] && setfont -C "$TTY" "$f" 2>/dev/null; then return 0; fi
+    done
+  done
+  echo "No usable Terminus font (size $s) found. Install: apk add kbd terminus-font" >&2
+  echo "(Debian: apt install kbd console-setup), or run: sh $0 install" >&2
 }
 
 run() {
