@@ -7,6 +7,18 @@ log()  { printf '==> %s\n' "$*"; }
 warn() { printf 'WARN: %s\n' "$*" >&2; }
 die()  { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
+enable_community() {  # Alpine: make sure the community repo is enabled
+  [ -f /etc/apk/repositories ] || return 0
+  grep -qE '^[^#].*/community' /etc/apk/repositories && return 0
+  echo "==> Enabling Alpine community repository..."
+  sed -i -E 's|^#(.*/community)$|\1|' /etc/apk/repositories
+  if ! grep -qE '^[^#].*/community' /etc/apk/repositories; then
+    main=$(grep -E '^[^#].*/main$' /etc/apk/repositories | head -n1)
+    [ -n "$main" ] && echo "${main%/main}/community" >> /etc/apk/repositories
+  fi
+  apk update
+}
+
 [ "$(id -u)" = 0 ] || die "Run as root."
 
 # ---------- detect OS ----------
@@ -37,15 +49,16 @@ fi
 log "Installing packages..."
 case "$OS" in
   alpine)
+    enable_community
     apk add --no-cache ca-certificates ssl_client wget \
-      xorg-server xinit xf86-video-fbdev xf86-input-evdev eudev
+      xorg-server xinit xf86-video-fbdev xf86-input-evdev eudev kbd terminus-font
     setup-devd udev >/dev/null 2>&1 || true
     ;;
   debian)
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
       ca-certificates wget xserver-xorg xinit \
-      xserver-xorg-video-fbdev xserver-xorg-input-evdev
+      xserver-xorg-video-fbdev xserver-xorg-input-evdev kbd console-setup
     ;;
 esac
 
