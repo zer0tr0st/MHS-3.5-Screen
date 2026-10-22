@@ -26,7 +26,7 @@ This repo contains two scripts:
 Clone the repository:
 
 ```sh
-git clone https://github.com/kai8ilw0rld/MHS35-SPI.git
+git clone https://github.com/zer0tr0st/MHS-3.5-Screen.git
 cd MHS35-SPI
 ```
 
